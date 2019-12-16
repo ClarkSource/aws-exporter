@@ -1,0 +1,6 @@
+CHANGELOG.txt
+
+:Author: Aljosha Friemann
+:Email: aljosha.friemann@clark.de
+
+# 0.1.0
