@@ -32,6 +32,3 @@ BACKUP_VAULT_LABELS = COMMON_LABELS + ['backup_vault_name']
 
 BACKUP_VAULT_RECOVERY_POINTS = Gauge(
     'aws_backup_recovery_points', 'AWS Backup vault number of recovery points', BACKUP_VAULT_LABELS)
-
-
-# vim: fenc=utf-8:ts=4:sw=4:expandtab

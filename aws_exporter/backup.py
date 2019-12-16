@@ -101,6 +101,3 @@ def get_backup_vaults():
                 *labels).set(vault['NumberOfRecoveryPoints'])
 
     paginate(BACKUP.list_backup_vaults, observe)
-
-
-# vim: fenc=utf-8:ts=4:sw=4:expandtab

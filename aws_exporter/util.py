@@ -18,6 +18,3 @@ def paginate(data_function, process_function):
             break
 
         response = data_function(response['NextToken'])
-
-
-# vim: fenc=utf-8:ts=4:sw=4:expandtab
