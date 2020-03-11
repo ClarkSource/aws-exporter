@@ -12,6 +12,7 @@ import time
 from prometheus_client import start_http_server
 
 from aws_exporter.backup import get_backup_jobs, get_backup_vaults
+from aws_exporter.sns import get_platform_applications
 
 
 def main():
@@ -20,5 +21,6 @@ def main():
     while True:
         get_backup_vaults()
         get_backup_jobs()
+        get_platform_applications()
 
         time.sleep(5)

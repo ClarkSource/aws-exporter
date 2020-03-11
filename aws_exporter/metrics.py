@@ -9,12 +9,13 @@
 
 from prometheus_client import Gauge
 
-COMMON_LABELS = ['creation_date']
+COMMON_LABELS = [] # aws_account_id
 
 ###############################################################################
 # AWS Backup
 
 BACKUP_JOB_LABELS = COMMON_LABELS + [
+    'creation_date',
     'completion_date',
     'backup_job_id',
     'backup_job_state',
@@ -32,3 +33,16 @@ BACKUP_VAULT_LABELS = COMMON_LABELS + ['backup_vault_name']
 
 BACKUP_VAULT_RECOVERY_POINTS = Gauge(
     'aws_backup_recovery_points', 'AWS Backup vault number of recovery points', BACKUP_VAULT_LABELS)
+
+###############################################################################
+# AWS SNS push notifications
+
+SNS_PLATFORM_APPLICATION_LABELS = COMMON_LABELS + [
+    'sns_platform_application_name'
+]
+
+SNS_PLATFORM_APPLICATION_ENABLED = Gauge(
+    'sns_platform_application_enabled', 'AWS SNS platform application enabled', SNS_PLATFORM_APPLICATION_LABELS)
+
+SNS_PLATFORM_APPLICATION_CERT_EXPIRY = Gauge(
+    'sns_platform_application_cert_expiry', 'AWS SNS platform application certificate expiration date', SNS_PLATFORM_APPLICATION_LABELS)
