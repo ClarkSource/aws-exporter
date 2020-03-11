@@ -12,6 +12,7 @@ import datetime
 
 from aws_exporter.metrics import (SNS_PLATFORM_APPLICATION_CERT_EXPIRY, SNS_PLATFORM_APPLICATION_ENABLED)
 from aws_exporter.util import paginate
+from aws_exporter.sts import get_account_id
 
 SNS = boto3.client('sns')
 
@@ -62,6 +63,7 @@ def get_platform_applications():
             attributes = application['Attributes']
 
             labels = [
+                get_account_id(),
                 name,
             ]
 

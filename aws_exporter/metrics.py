@@ -9,7 +9,7 @@
 
 from prometheus_client import Gauge
 
-COMMON_LABELS = [] # aws_account_id
+COMMON_LABELS = ['aws_account_id'] # aws_account_id
 
 ###############################################################################
 # AWS Backup

@@ -13,6 +13,7 @@ from aws_exporter.metrics import (BACKUP_JOB_PERCENT_DONE,
                                   BACKUP_JOB_SIZE_BYTES,
                                   BACKUP_VAULT_RECOVERY_POINTS)
 from aws_exporter.util import paginate
+from aws_exporter.sts import get_account_id
 
 BACKUP = boto3.client('backup')
 
@@ -54,6 +55,7 @@ def get_backup_jobs():
         for job in response.get('BackupJobs', []):
             # print(job)
             labels = [
+                get_account_id(),
                 job['CreationDate'],
                 job['CompletionDate'],
                 job['BackupJobId'],
@@ -93,6 +95,7 @@ def get_backup_vaults():
     def observe(response):
         for vault in response.get('BackupVaultList', []):
             labels = [
+                get_account_id(),
                 vault['CreationDate'],
                 vault['BackupVaultName'],
             ]
