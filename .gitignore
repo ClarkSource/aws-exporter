@@ -1,4 +1,6 @@
 *.pyc
+*.egg-info
 
 .tox
+.eggs
 __pycache__

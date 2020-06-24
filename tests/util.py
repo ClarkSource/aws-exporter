@@ -7,23 +7,21 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-import time
 
-from prometheus_client import start_http_server
-
-from aws_exporter.backup import get_backup_jobs, get_backup_vaults
-from aws_exporter.sns import get_platform_applications
+from aws_exporter.util import paginate
 
 
-def main():
-    try:
-        start_http_server(8000)
+def test_paginate():
+    def produce(token=None):
+        if token == 'END':
+            return dict()
+        elif token == 'START':
+            return dict(NextToken='END')
+        else:
+            return dict(NextToken='START')
 
-        while True:
-            get_backup_vaults()
-            get_backup_jobs()
-            get_platform_applications()
+    def observe(data):
+        if 'NextToken' in data:
+            assert data['NextToken'] in ['START', 'END']
 
-            time.sleep(10)
-    except KeyboardInterrupt:
-        exit(137)
+    paginate(produce, observe)

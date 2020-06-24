@@ -53,7 +53,6 @@ def get_backup_jobs():
 
     def observe(response):
         for job in response.get('BackupJobs', []):
-            # print(job)
             labels = [
                 get_account_id(),
                 job['CreationDate'],
@@ -96,7 +95,6 @@ def get_backup_vaults():
         for vault in response.get('BackupVaultList', []):
             labels = [
                 get_account_id(),
-                vault['CreationDate'],
                 vault['BackupVaultName'],
             ]
 
