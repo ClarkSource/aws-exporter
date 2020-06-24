@@ -16,11 +16,14 @@ from aws_exporter.sns import get_platform_applications
 
 
 def main():
-    start_http_server(8000)
+    try:
+        start_http_server(8000)
 
-    while True:
-        get_backup_vaults()
-        get_backup_jobs()
-        get_platform_applications()
+        while True:
+            get_backup_vaults()
+            get_backup_jobs()
+            get_platform_applications()
 
-        time.sleep(5)
+            time.sleep(10)
+    except KeyboardInterrupt:
+        exit(137)
