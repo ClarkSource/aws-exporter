@@ -2,7 +2,15 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: node
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/img: "unconfined"
+    container.seccomp.security.alpha.kubernetes.io/img: "unconfined"
 spec:
+  volumes:
+    - name: docker-socket-volume
+      hostPath:
+        path: /var/run/docker.sock
+        type: File
   containers:
     - name: python
       image: python:3-alpine
@@ -11,8 +19,24 @@ spec:
         - cat
       resources:
         requests:
+          memory: '512Mi'
+          cpu: '1'
+        limits:
+          memory: '512Mi'
+          cpu: '1'
+      volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: docker-socket-volume
+    - name: img
+      image: r.j3ss.co/img
+      tty: true
+      command:
+        - cat
+      resources:
+        requests:
           memory: '256Mi'
           cpu: '100m'
         limits:
-          memory: '512Mi'
-          cpu: '500m'
+          memory: '256Mi'
+          cpu: '100m'
+
