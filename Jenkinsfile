@@ -1,9 +1,3 @@
-String registry = "clarksource"
-String repository = "aws-exporter"
-String image = "${registry}/${repository}"
-
-def dockerImage = null
-
 pipeline {
   agent {
     kubernetes {
@@ -59,29 +53,6 @@ pipeline {
         sh 'pip install --upgrade twine'
         withCredentials([usernamePassword(credentialsId: 'pypi', usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD')]) {
           sh 'twine upload dist/*'
-        }
-      }
-    }
-
-    stage('docker') {
-      steps {
-        container('img') {
-          script {
-          def tag = null
-          if (env.BRANCH_NAME == 'master') {
-            tag = 'latest'
-          } else {
-            tag = env.GIT_COMMIT
-          }
-            sh "img build -t ${image}:${tag} ."
-
-            // dockerImage = docker.build("${image}:${env.GIT_COMMIT}")
-
-            /* docker.withRegistry(credentialsId: 'dockerhub') { */
-            /*   dockerImage.push(env.TAG_NAME) */
-            /*   dockerImage.push("latest") */
-            /* } */
-          }
         }
       }
     }
