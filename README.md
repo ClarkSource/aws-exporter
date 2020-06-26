@@ -1,5 +1,10 @@
 # AWS Prometheus Exporter
 
+[![Build Status](https://jenkins.ci.flfinteche.de/buildStatus/icon?job=CloudOps%2Faws-exporter%2Fmaster)](https://jenkins.ci.flfinteche.de/job/CloudOps/job/aws-exporter/job/master/)
+[![PyPi version](https://pypip.in/v/aws-exporter/badge.png)](https://pypi.org/project/aws-exporter/)
+[![PyPi downloads](https://pypip.in/d/aws-exporter/badge.png)](https://pypi.org/project/aws-exporter/)
+[![CLARK Open Source](https://img.shields.io/badge/CLARK-Open%20Source-%232B6CDE.svg)](https://www.clark.de/de/jobs)
+
 Prometheus exporter for generic AWS metrics.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
