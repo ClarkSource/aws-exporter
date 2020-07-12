@@ -9,15 +9,20 @@
 
 import boto3
 
-from aws_exporter.metrics import (BACKUP_JOB_PERCENT_DONE,
-                                  BACKUP_JOB_SIZE_BYTES,
-                                  BACKUP_VAULT_RECOVERY_POINTS)
-from aws_exporter.util import paginate
+from aws_exporter.metrics import (
+    BACKUP_JOB_COLLECTOR_SUCCESS,
+    BACKUP_VAULT_COLLECTOR_SUCCESS,
+    BACKUP_JOB_PERCENT_DONE,
+    BACKUP_JOB_SIZE_BYTES,
+    BACKUP_VAULT_RECOVERY_POINTS)
+
+from aws_exporter.util import paginate, success_metric
 from aws_exporter.sts import get_account_id
 
 BACKUP = boto3.client('backup')
 
 
+@success_metric(BACKUP_JOB_COLLECTOR_SUCCESS)
 def get_backup_jobs():
     """
     {
@@ -74,6 +79,7 @@ def get_backup_jobs():
     paginate(BACKUP.list_backup_jobs, observe)
 
 
+@success_metric(BACKUP_VAULT_COLLECTOR_SUCCESS)
 def get_backup_vaults():
     """
     {
