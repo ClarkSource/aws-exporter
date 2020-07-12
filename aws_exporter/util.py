@@ -17,4 +17,4 @@ def paginate(data_function, process_function):
         if 'NextToken' not in response:
             break
 
-        response = data_function(response['NextToken'])
+        response = data_function(NextToken=response['NextToken'])
