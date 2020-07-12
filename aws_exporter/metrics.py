@@ -38,7 +38,7 @@ BACKUP_VAULT_COLLECTOR_SUCCESS = Gauge(
     'aws_backup_vault_collector_success', 'AWS Backup vault collector success', COMMON_LABELS)
 
 BACKUP_VAULT_RECOVERY_POINTS = Gauge(
-    'aws_backup_recovery_points', 'AWS Backup vault number of recovery points', BACKUP_VAULT_LABELS)
+    'aws_backup_vault_recovery_points', 'AWS Backup vault number of recovery points', BACKUP_VAULT_LABELS)
 
 ###############################################################################
 # AWS SNS push notifications

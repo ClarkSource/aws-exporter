@@ -16,5 +16,6 @@ mach-nix.mkPythonShell {
     boto3
     tox
     pre-commit
+    nodeenv
   '';
 }
