@@ -16,4 +16,3 @@ repos:
     rev: v1.4.0
     hooks:
       - id: doctoc
-        language: system

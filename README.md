@@ -41,11 +41,14 @@ The exporter should be exposed on port `8000`
 
 ### AWS Backup
 
+* aws_backup_job_collector_success
 * aws_backup_job_size_bytes
 * aws_backup_job_percent_done
-* aws_backup_recovery_points
+* aws_backup_vault_collector_success
+* aws_backup_vault_recovery_points
 
 ### AWS SNS
 
+* sns_platform_application_collector_success
 * sns_platform_application_enabled
 * sns_platform_application_cert_expiry

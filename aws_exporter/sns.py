@@ -10,12 +10,17 @@
 import boto3
 import datetime
 
-from aws_exporter.metrics import (SNS_PLATFORM_APPLICATION_CERT_EXPIRY, SNS_PLATFORM_APPLICATION_ENABLED)
-from aws_exporter.util import paginate
+from aws_exporter.metrics import (
+    SNS_PLATFORM_APPLICATION_COLLECTOR_SUCCESS,
+    SNS_PLATFORM_APPLICATION_CERT_EXPIRY,
+    SNS_PLATFORM_APPLICATION_ENABLED)
+
+from aws_exporter.util import paginate, success_metric
 from aws_exporter.sts import get_account_id
 
 SNS = boto3.client('sns')
 
+@success_metric(SNS_PLATFORM_APPLICATION_COLLECTOR_SUCCESS)
 def get_platform_applications():
     """
     {
