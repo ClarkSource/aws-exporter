@@ -1,3 +1,5 @@
+library("base")
+
 pipeline {
   agent {
     kubernetes {
