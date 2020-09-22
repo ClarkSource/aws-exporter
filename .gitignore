@@ -2,5 +2,7 @@
 *.egg-info
 
 .tox
+.direnv
+.mypy_cache
 .eggs
 __pycache__
