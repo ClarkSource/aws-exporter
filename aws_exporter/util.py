@@ -9,25 +9,31 @@
 
 import logging
 import sys
-
 from functools import wraps
 
 from aws_exporter.sts import get_account_id
 
-
 LOGGER = logging.getLogger(__name__)
 
 
-def paginate(data_function, process_function):
-    response = data_function()
+def paginate(data_function, process_function, data_function_kwargs=None, process_function_kwargs=None):
+    """
+    paginate a data function and execute a process function on results
+    """
+    data_function_kwargs = data_function_kwargs if data_function_kwargs is not None else dict()
+
+    response = data_function(**data_function_kwargs)
+
+    process_function_kwargs = process_function_kwargs if process_function_kwargs is not None else dict()
 
     while True:
-        process_function(response)
+        process_function(response, **process_function_kwargs)
 
-        if 'NextToken' not in response:
+        if "NextToken" not in response:
             break
 
-        response = data_function(NextToken=response['NextToken'])
+        response = data_function(NextToken=response["NextToken"])
+
 
 def success_metric(metric):
     def decorator(collector_function):
@@ -36,9 +42,10 @@ def success_metric(metric):
             try:
                 return collector_function(*args, **kwargs)
             except Exception as exc:
-                LOGGER.exception('caught exception in collector function')
+                LOGGER.exception("caught exception in collector function")
             finally:
                 metric.labels(get_account_id()).set(0 if sys.exc_info()[0] is not None else 1)
 
         return function_wrapper
+
     return decorator

@@ -7,19 +7,18 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import datetime
+
 import boto3
-
-from aws_exporter.metrics import (
-    BACKUP_JOB_COLLECTOR_SUCCESS,
-    BACKUP_VAULT_COLLECTOR_SUCCESS,
-    BACKUP_JOB_PERCENT_DONE,
-    BACKUP_JOB_SIZE_BYTES,
-    BACKUP_VAULT_RECOVERY_POINTS)
-
-from aws_exporter.util import paginate, success_metric
+from aws_exporter.metrics import (BACKUP_JOB_COLLECTOR_SUCCESS,
+                                  BACKUP_JOB_PERCENT_DONE,
+                                  BACKUP_JOB_SIZE_BYTES,
+                                  BACKUP_VAULT_COLLECTOR_SUCCESS,
+                                  BACKUP_VAULT_RECOVERY_POINTS)
 from aws_exporter.sts import get_account_id
+from aws_exporter.util import paginate, success_metric
 
-BACKUP = boto3.client('backup')
+BACKUP = boto3.client("backup")
 
 
 @success_metric(BACKUP_JOB_COLLECTOR_SUCCESS)
@@ -57,26 +56,26 @@ def get_backup_jobs():
     """
 
     def observe(response):
-        for job in response.get('BackupJobs', []):
+        for job in response.get("BackupJobs", []):
             labels = [
                 get_account_id(),
-                job['CreationDate'],
-                job['CompletionDate'],
-                job['BackupJobId'],
-                job['State'],
-                job['CreatedBy']['BackupRuleId'],
-                job['CreatedBy']['BackupPlanId'],
-                job['BackupVaultName'],
+                job["CreationDate"],
+                job["CompletionDate"],
+                job["BackupJobId"],
+                job["State"],
+                job["CreatedBy"]["BackupRuleId"],
+                job["CreatedBy"]["BackupPlanId"],
+                job["BackupVaultName"],
             ]
 
-            BACKUP_JOB_PERCENT_DONE.labels(
-                *labels).set(float(job['PercentDone']))
+            BACKUP_JOB_PERCENT_DONE.labels(*labels).set(float(job["PercentDone"]))
 
-            if 'BackupSizeInBytes' in job:
-                BACKUP_JOB_SIZE_BYTES.labels(
-                    *labels).set(float(job['BackupSizeInBytes']))
+            if "BackupSizeInBytes" in job:
+                BACKUP_JOB_SIZE_BYTES.labels(*labels).set(float(job["BackupSizeInBytes"]))
 
-    paginate(BACKUP.list_backup_jobs, observe)
+    paginate(
+        BACKUP.list_backup_jobs, observe, dict(ByCreatedAfter=datetime.datetime.now() - datetime.timedelta(1)),
+    )
 
 
 @success_metric(BACKUP_VAULT_COLLECTOR_SUCCESS)
@@ -98,13 +97,12 @@ def get_backup_vaults():
     """
 
     def observe(response):
-        for vault in response.get('BackupVaultList', []):
+        for vault in response.get("BackupVaultList", []):
             labels = [
                 get_account_id(),
-                vault['BackupVaultName'],
+                vault["BackupVaultName"],
             ]
 
-            BACKUP_VAULT_RECOVERY_POINTS.labels(
-                *labels).set(vault['NumberOfRecoveryPoints'])
+            BACKUP_VAULT_RECOVERY_POINTS.labels(*labels).set(vault["NumberOfRecoveryPoints"])
 
     paginate(BACKUP.list_backup_vaults, observe)
