@@ -10,12 +10,12 @@ Prometheus exporter for generic AWS metrics.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Installation](#installation)
 - [Usage](#usage)
 - [Metrics](#metrics)
   - [AWS Backup](#aws-backup)
   - [AWS SNS](#aws-sns)
+  - [AWS EC2 AMIs](#aws-ec2-amis)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -52,3 +52,7 @@ The exporter should be exposed on port `8000`
 * sns_platform_application_collector_success
 * sns_platform_application_enabled
 * sns_platform_application_cert_expiry
+
+### AWS EC2 AMIs
+
+* ec2_ami_creation_date
