@@ -15,7 +15,7 @@ from aws_exporter.metrics import (BACKUP_JOB_COLLECTOR_SUCCESS,
                                   BACKUP_JOB_SIZE_BYTES,
                                   BACKUP_VAULT_COLLECTOR_SUCCESS,
                                   BACKUP_VAULT_RECOVERY_POINTS)
-from aws_exporter.sts import get_account_id
+from aws_exporter.aws.sts import get_account_id
 from aws_exporter.util import paginate, success_metric
 
 BACKUP = boto3.client("backup")

@@ -16,7 +16,7 @@ from aws_exporter.metrics import (
     SNS_PLATFORM_APPLICATION_ENABLED)
 
 from aws_exporter.util import paginate, success_metric
-from aws_exporter.sts import get_account_id
+from aws_exporter.aws.sts import get_account_id
 
 SNS = boto3.client('sns')
 

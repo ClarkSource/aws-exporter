@@ -11,7 +11,7 @@ import logging
 import sys
 from functools import wraps
 
-from aws_exporter.sts import get_account_id
+from aws_exporter.aws.sts import get_account_id
 
 LOGGER = logging.getLogger(__name__)
 

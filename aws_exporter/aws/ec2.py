@@ -12,10 +12,9 @@ import boto3
 import time
 import logging
 
-from aws_exporter.metrics import (EC2_AMI_CREATION_DATE)
-
+from aws_exporter.metrics import EC2_AMI_CREATION_DATE
 from aws_exporter.util import paginate
-from aws_exporter.sts import get_account_id
+from aws_exporter.aws.sts import get_account_id
 
 EC2 = boto3.client('ec2')
 LOGGER = logging.getLogger(__name__)
