@@ -6,6 +6,5 @@ jobs:
       - image: circleci/python:3.9
     steps:
       - checkout
-      - run:
-          command: |
-            tox
+      - run: pip install tox
+      - run: tox
