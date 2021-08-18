@@ -1,4 +1,22 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools>=45",
+  "wheel",
+  "setuptools_scm[toml]>=6.0"
+]
+
 [tool.setuptools_scm]
 
 [tool.black]
 line-length = 160
+
+[tool.isort]
+profile = "hug"
+src_paths = ["aws_exporter", "tests"]
+known_first_party = ["aws_exporter"]
+
+[tool.pytest.ini_options]
+norecursedirs = [".tox", ".direnv", ".git"]
+python_files = ["*.py"]
+testpaths = ["tests"]

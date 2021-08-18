@@ -41,7 +41,7 @@ def success_metric(metric):
         def function_wrapper(*args, **kwargs):
             try:
                 return collector_function(*args, **kwargs)
-            except Exception as exc:
+            except Exception:
                 LOGGER.exception("caught exception in collector function")
             finally:
                 metric.labels(get_account_id()).set(0 if sys.exc_info()[0] is not None else 1)

@@ -11,9 +11,7 @@ import boto3
 
 from functools import lru_cache
 
-STS = boto3.client('sts')
-
 
 @lru_cache(maxsize=None)
 def get_account_id():
-    return STS.get_caller_identity()['Account']
+    return boto3.client('sts').get_caller_identity()['Account']
