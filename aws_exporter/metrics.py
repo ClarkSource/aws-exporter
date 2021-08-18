@@ -44,7 +44,7 @@ BACKUP_VAULT_RECOVERY_POINTS = Gauge(
 # AWS SNS push notifications
 
 SNS_PLATFORM_APPLICATION_LABELS = COMMON_LABELS + [
-    'sns_platform_application_name'
+    'sns_platform_application_name',
 ]
 
 SNS_PLATFORM_APPLICATION_COLLECTOR_SUCCESS = Gauge(
@@ -55,3 +55,24 @@ SNS_PLATFORM_APPLICATION_ENABLED = Gauge(
 
 SNS_PLATFORM_APPLICATION_CERT_EXPIRY = Gauge(
     'sns_platform_application_cert_expiry', 'AWS SNS platform application certificate expiration date', SNS_PLATFORM_APPLICATION_LABELS)
+
+
+###############################################################################
+# AWS EC2 AMIs
+
+EC2_AMI_LABELS = COMMON_LABELS + [
+    'architecture',
+    'ena_support',
+    'hypervisor',
+    'image_id',
+    'image_name',
+    'owner_id',
+    'platform',
+    'public',
+    'root_device_name',
+    'root_device_type',
+    'virtualization_type',
+]
+
+EC2_AMI_CREATION_DATE = Gauge(
+    'ec2_ami_creation_date', 'AWS EC2 AMI creation date in unix epoch', EC2_AMI_LABELS)

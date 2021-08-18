@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # ISC License
 #
 # Copyright 2019 FL Fintech E GmbH
@@ -8,11 +7,11 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-from setuptools import setup
+import boto3
 
-setup(
-    use_scm_version=True,
-    include_package_data=True,
-    entry_points={'console_scripts': [
-        'aws-exporter=aws_exporter.cli:main']}
-)
+from functools import lru_cache
+
+
+@lru_cache(maxsize=None)
+def get_account_id():
+    return boto3.client('sts').get_caller_identity()['Account']
