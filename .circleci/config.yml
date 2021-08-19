@@ -13,7 +13,7 @@ jobs:
       - image: circleci/python:3.9
     steps:
       - checkout
-      - run: sudo pip install build twine
+      - run: sudo pip install build twine setuptools-scm
       - run:
           # https://github.com/pypa/setuptools_scm/issues/455
           command: |
