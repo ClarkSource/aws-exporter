@@ -60,25 +60,6 @@ jobs:
           paths:
             - docker/image.tar
 
-  docker_push_test:
-    docker:
-      - image: circleci/buildpack-deps:stretch
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run: docker load -i /tmp/workspace/docker/image.tar
-      - run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
-      - run:
-          name: push versioned image
-          command: |
-            docker tag "$IMAGE_NAME:latest" "$IMAGE_NAME:test"
-            docker push "$IMAGE_NAME:test"
-      - run:
-          name: push latest image
-          command: docker push "$IMAGE_NAME:latest"
-
   docker_push:
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -121,11 +102,6 @@ workflows:
       - docker_build:
           requires:
             - test
-      - docker_push_test:
-          requires:
-            - docker_build
-          context:
-            - hub.docker.com
       - test_pypi_publish:
           <<: *only_on_main_branch
           requires:
