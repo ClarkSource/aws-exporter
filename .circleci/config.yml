@@ -8,7 +8,7 @@ jobs:
       - run: pip install tox
       - run: tox
 
-  check_build:
+  build_dist:
     docker:
       - image: circleci/python:3.9
     steps:
@@ -28,6 +28,8 @@ jobs:
   test_pypi_publish:
     docker:
       - image: circleci/python:3.9
+    environment:
+      TWINE_PASSWORD: $TESTPYPI_TOKEN
     steps:
       - attach_workspace:
           at: dist
@@ -37,6 +39,8 @@ jobs:
   pypi_publish:
     docker:
       - image: circleci/python:3.9
+    environment:
+      TWINE_PASSWORD: $PYPI_TOKEN
     steps:
       - attach_workspace:
           at: dist
@@ -47,7 +51,7 @@ only_on_main_branch: &only_on_main_branch
   filters:
     branches:
       only:
-        - master
+        - circleci-editor/master
 
 only_on_tags: &only_on_tags
   filters:
@@ -61,15 +65,15 @@ workflows:
   test_and_publish:
     jobs:
       - test
-      - check_build
+      - build_dist
       - test_pypi_publish:
           <<: *only_on_main_branch
           requires:
             - test
-            - check_build
+            - build_dist
       - pypi_publish:
           <<: *only_on_tags
           requires:
             - test
-            - check_build
+            - build_dist
             - test_pypi_publish
