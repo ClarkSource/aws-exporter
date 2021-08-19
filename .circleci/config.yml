@@ -47,7 +47,7 @@ only_on_main_branch: &only_on_main_branch
   filters:
     branches:
       only:
-        - circleci-editor/master
+        - master
 
 only_on_tags: &only_on_tags
   filters:
