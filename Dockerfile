@@ -1,14 +1,14 @@
 FROM python:3-alpine
 
-MAINTAINER "CloudOps ClarkSource <CloudOps@clark.de>"
-LABEL maintainer="CloudOps@clark.de"
+LABEL maintainer="cloudops@clark.de"
 
 COPY . /setup
-WORKDIR /setup
+#WORKDIR /setup
 
 RUN \
   apk add --no-cache --upgrade git && \
-  python3 setup.py install && \
+  pip install ./setup && \
+  rm -rf ./setup && \
   apk del git && \
   rm -rf /setup /var/cache/apk 
 
