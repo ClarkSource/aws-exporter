@@ -28,12 +28,7 @@ jobs:
   test_pypi_publish:
     docker:
       - image: circleci/python:3.9
-    environment:
-      TWINE_USERNAME: __token__
-      TWINE_PASSWORD: $TESTPYPI_TOKEN
     steps:
-      - run: echo "$TWINE_USERNAME"
-      - run: echo "$TWINE_PASSWORD"
       - attach_workspace:
           at: dist
       - run: sudo pip install twine
@@ -42,9 +37,6 @@ jobs:
   pypi_publish:
     docker:
       - image: circleci/python:3.9
-    environment:
-      TWINE_USERNAME: __token__
-      TWINE_PASSWORD: $PYPI_TOKEN
     steps:
       - attach_workspace:
           at: dist
@@ -75,9 +67,13 @@ workflows:
           requires:
             - test
             - build_dist
+          context:
+            - test.pypi.org
       - pypi_publish:
           <<: *only_on_tags
           requires:
             - test
             - build_dist
             - test_pypi_publish
+          context:
+            - pypi.org
