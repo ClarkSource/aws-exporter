@@ -83,7 +83,7 @@ jobs:
 build_everywhere: &build_everywhere
   filters:
     tags:
-      only: /^\d+\.\d+\.\d+$/
+      only: /.*/
 
 build_only_on_main_branch: &build_only_on_main_branch
   <<: *build_everywhere
