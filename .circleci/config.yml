@@ -1,5 +1,24 @@
 version: 2
 
+workflows:
+  test_and_publish:
+    jobs:
+      - test
+      - test_pypi_publish:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - pypi_publish:
+          requires:
+            - test
+          filters:
+            tags:
+              only:
+                - /(\d)+(\.(\d)+)+/
+
 jobs:
   test:
     docker:
@@ -8,3 +27,19 @@ jobs:
       - checkout
       - run: pip install tox
       - run: tox
+
+  test_pypi_publish:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - run: python setup.py sdist bdist_wheel
+      - run: pip install twine
+
+  pypi_publish:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - run: python setup.py sdist bdist_wheel
+      - run: pip install twine
