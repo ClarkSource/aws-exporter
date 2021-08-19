@@ -46,13 +46,35 @@ jobs:
   docker_build:
     docker:
       - image: circleci/buildpack-deps:stretch
-    environment:
-      IMAGE_NAME: clarksource/aws-exporter
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
       - run: docker build -t "$IMAGE_NAME:latest" .
+      - run: 
+          command: |
+            mkdir docker
+            docker save -o docker/image.tar "$IMAGE_NAME:latest"
+      - persist_to_workspace:
+          root: docker
+          paths:
+            - "*"
+
+  docker_push:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - attach_workspace:
+          at: docker
+      - run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+      - run:
+          name: push versioned image
+          command: |
+            docker tag "$IMAGE_NAME:latest" "$IMAGE_NAME:$CIRCLE_TAG"
+            docker push "$IMAGE_NAME:$CIRCLE_TAG"
+      - run:
+          name: push latest image
+          command: docker push "$IMAGE_NAME:latest"
 
 only_on_main_branch: &only_on_main_branch
   filters:
@@ -73,7 +95,9 @@ workflows:
     jobs:
       - test
       - build_dist
-      - docker_build
+      - docker_build:
+          requires:
+            - test
       - test_pypi_publish:
           <<: *only_on_main_branch
           requires:
@@ -89,3 +113,10 @@ workflows:
             - test_pypi_publish
           context:
             - pypi.org
+      - docker_push:
+          <<: *only_on_tags
+          requires:
+            - pypi_publish
+            - docker_build
+          context:
+            - dockerhub.com
