@@ -6,3 +6,5 @@
 .mypy_cache
 .eggs
 __pycache__
+dist
+build

@@ -1,5 +1,4 @@
 version: 2
-
 jobs:
   test:
     docker:
@@ -8,3 +7,77 @@ jobs:
       - checkout
       - run: pip install tox
       - run: tox
+
+  build_dist:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - run: sudo pip install build twine setuptools-scm
+      - run:
+          # https://github.com/pypa/setuptools_scm/issues/455
+          command: |
+            export SETUPTOOLS_SCM_PRETEND_VERSION=$(python -c 'from setuptools_scm import get_version; print(get_version(local_scheme="no-local-version"))')
+            python -m build
+      - run: twine check dist/*
+      - persist_to_workspace:
+          root: dist
+          paths:
+            - "*"
+
+  test_pypi_publish:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - attach_workspace:
+          at: dist
+      - run:
+          command: |
+            echo "$TWINE_USERNAME"
+            echo "$TWINE_PASSWORD"
+      - run: sudo pip install twine
+      - run: twine upload --repository testpypi dist/*
+
+  pypi_publish:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - attach_workspace:
+          at: dist
+      - run: sudo pip install twine
+      - run: twine upload dist/*
+
+only_on_main_branch: &only_on_main_branch
+  filters:
+    branches:
+      only:
+        - master
+
+only_on_tags: &only_on_tags
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      only: /^\d+\.\d+$/
+
+workflows:
+  version: 2
+  test_and_publish:
+    jobs:
+      - test
+      - build_dist
+      - test_pypi_publish:
+          <<: *only_on_main_branch
+          requires:
+            - test
+            - build_dist
+          context:
+            - test.pypi.org
+      - pypi_publish:
+          <<: *only_on_tags
+          requires:
+            - test
+            - build_dist
+            - test_pypi_publish
+          context:
+            - pypi.org
