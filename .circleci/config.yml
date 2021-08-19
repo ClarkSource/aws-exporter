@@ -13,16 +13,17 @@ jobs:
       - image: circleci/python:3.9
     steps:
       - checkout
-      - run: python setup.py sdist bdist_wheel
-      - run: pip install twine
+      - run: sudo pip install build twine
+      - run: python -m build
 
   pypi_publish:
     docker:
       - image: circleci/python:3.9
     steps:
       - checkout
-      - run: python setup.py sdist bdist_wheel
-      - run: pip install twine
+      - run: sudo pip install build twine
+      - run: python -m build
+
 workflows:
   version: 2
   test_and_publish:
