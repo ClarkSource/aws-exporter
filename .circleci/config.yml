@@ -80,37 +80,45 @@ jobs:
           name: push latest image
           command: docker push "$IMAGE_NAME:latest"
 
-only_on_main_branch: &only_on_main_branch
+build_everywhere: &build_everywhere
+  filters:
+    tags:
+      only: /^\d+\.\d+\.\d+$/
+
+build_only_on_main_branch: &build_only_on_main_branch
+  <<: *build_everywhere
   filters:
     branches:
       only:
         - master
 
-only_on_tags: &only_on_tags
+build_only_on_tags: &build_only_on_tags
+  <<: *build_everywhere
   filters:
     branches:
       ignore: /.*/
-    tags:
-      only: /^\d+\.\d+$/
 
 workflows:
   version: 2
   test_and_publish:
     jobs:
-      - test
-      - build_dist
+      - test:
+          <<: *build_everywhere
+      - build_dist:
+          <<: *build_everywhere
       - docker_build:
+          <<: *build_everywhere
           requires:
             - test
       - test_pypi_publish:
-          <<: *only_on_main_branch
+          <<: *build_only_on_main_branch
           requires:
             - test
             - build_dist
           context:
             - test.pypi.org
       - pypi_publish:
-          <<: *only_on_tags
+          <<: *build_only_on_tags
           requires:
             - test
             - build_dist
@@ -118,7 +126,7 @@ workflows:
           context:
             - pypi.org
       - docker_push:
-          <<: *only_on_tags
+          <<: *build_only_on_tags
           requires:
             - pypi_publish
             - docker_build
