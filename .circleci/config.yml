@@ -24,6 +24,14 @@ jobs:
       - checkout
       - run: sudo pip install build twine
       - run: python -m build
+      - run: twine upload dist/*
+
+only_on_tags: &only_on_tags
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      only: /^\d+\.\d+$/
 
 workflows:
   version: 2
@@ -31,20 +39,10 @@ workflows:
     jobs:
       - test
       - test_pypi_publish:
+          <<: *only_on_tags
           requires:
             - test
-          filters:
-            branches:
-              only:
-                - circleci-editor/master
       - pypi_publish:
+          <<: *only_on_tags
           requires:
             - test
-          filters:
-            branches:
-              only:
-                - master
-            tags:
-              only:
-                - /(\d)+(\.(\d)+)+/
-
