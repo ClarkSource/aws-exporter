@@ -74,5 +74,8 @@ EC2_AMI_LABELS = COMMON_LABELS + [
     'virtualization_type',
 ]
 
+EC2_AMI_COLLECTOR_SUCCESS = Gauge(
+    'ec2_ami_collector_success', 'AWS EC2 AMI collector success', COMMON_LABELS)
+
 EC2_AMI_CREATION_DATE = Gauge(
     'ec2_ami_creation_date', 'AWS EC2 AMI creation date in unix epoch', EC2_AMI_LABELS)

@@ -21,31 +21,64 @@ jobs:
             python -m build
       - run: twine check dist/*
       - persist_to_workspace:
-          root: dist
+          root: .
           paths:
-            - "*"
+            - dist/*
 
   test_pypi_publish:
     docker:
       - image: circleci/python:3.9
     steps:
       - attach_workspace:
-          at: dist
-      - run:
-          command: |
-            echo "$TWINE_USERNAME"
-            echo "$TWINE_PASSWORD"
+          at: /tmp/workspace
       - run: sudo pip install twine
-      - run: twine upload --repository testpypi dist/*
+      - run: twine upload --repository testpypi /tmp/workspace/dist/*
 
   pypi_publish:
     docker:
       - image: circleci/python:3.9
     steps:
       - attach_workspace:
-          at: dist
+          at: /tmp/workspace
       - run: sudo pip install twine
-      - run: twine upload dist/*
+      - run: twine upload /tmp/workspace/dist/*
+
+  docker_build:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker build -t "$IMAGE_NAME:latest" .
+      - run: 
+          command: |
+            mkdir docker
+            docker save -o docker/image.tar "$IMAGE_NAME:latest"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - docker/image.tar
+
+  docker_push:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - run: test -n "$CIRCLE_TAG"
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker load -i /tmp/workspace/docker/image.tar
+      - run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
+      - run:
+          name: push versioned image
+          command: |
+            docker tag "$IMAGE_NAME:latest" "$IMAGE_NAME:$CIRCLE_TAG"
+            docker push "$IMAGE_NAME:$CIRCLE_TAG"
+      - run:
+          name: push latest image
+          command: docker push "$IMAGE_NAME:latest"
 
 only_on_main_branch: &only_on_main_branch
   filters:
@@ -66,6 +99,9 @@ workflows:
     jobs:
       - test
       - build_dist
+      - docker_build:
+          requires:
+            - test
       - test_pypi_publish:
           <<: *only_on_main_branch
           requires:
@@ -81,3 +117,10 @@ workflows:
             - test_pypi_publish
           context:
             - pypi.org
+      - docker_push:
+          <<: *only_on_tags
+          requires:
+            - pypi_publish
+            - docker_build
+          context:
+            - hub.docker.com
