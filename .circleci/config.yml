@@ -21,27 +21,27 @@ jobs:
             python -m build
       - run: twine check dist/*
       - persist_to_workspace:
-          root: dist
+          root: .
           paths:
-            - "*"
+            - dist/*
 
   test_pypi_publish:
     docker:
       - image: circleci/python:3.9
     steps:
       - attach_workspace:
-          at: dist
+          at: /tmp/workspace
       - run: sudo pip install twine
-      - run: twine upload --repository testpypi dist/*
+      - run: twine upload --repository testpypi /tmp/workspace/dist/*
 
   pypi_publish:
     docker:
       - image: circleci/python:3.9
     steps:
       - attach_workspace:
-          at: dist
+          at: /tmp/workspace
       - run: sudo pip install twine
-      - run: twine upload dist/*
+      - run: twine upload /tmp/workspace/dist/*
 
   docker_build:
     docker:
@@ -56,17 +56,40 @@ jobs:
             mkdir docker
             docker save -o docker/image.tar "$IMAGE_NAME:latest"
       - persist_to_workspace:
-          root: docker
+          root: .
           paths:
-            - "*"
+            - docker/image.tar
+
+  docker_push_test:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker load -i /tmp/workspace/docker/image.tar
+      - run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
+      - run:
+          name: push versioned image
+          command: |
+            docker tag "$IMAGE_NAME:latest" "$IMAGE_NAME:test"
+            docker push "$IMAGE_NAME:test"
+      - run:
+          name: push latest image
+          command: docker push "$IMAGE_NAME:latest"
 
   docker_push:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
+      - run: test -n "$CIRCLE_TAG"
       - attach_workspace:
-          at: docker
-      - run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          at: /tmp/workspace
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker load -i /tmp/workspace/docker/image.tar
+      - run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
       - run:
           name: push versioned image
           command: |
@@ -98,6 +121,11 @@ workflows:
       - docker_build:
           requires:
             - test
+      - docker_push_test:
+          requires:
+            - docker_build
+          context:
+            - hub.docker.com
       - test_pypi_publish:
           <<: *only_on_main_branch
           requires:
@@ -119,4 +147,4 @@ workflows:
             - pypi_publish
             - docker_build
           context:
-            - dockerhub.com
+            - hub.docker.com
