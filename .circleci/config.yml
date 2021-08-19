@@ -86,17 +86,17 @@ build_everywhere: &build_everywhere
       only: /.*/
 
 build_only_on_main_branch: &build_only_on_main_branch
-  <<: *build_everywhere
   filters:
     branches:
       only:
         - master
 
 build_only_on_tags: &build_only_on_tags
-  <<: *build_everywhere
   filters:
     branches:
       ignore: /.*/
+    tags:
+      only: /.*/
 
 workflows:
   version: 2
@@ -122,7 +122,6 @@ workflows:
           requires:
             - test
             - build_dist
-            - test_pypi_publish
           context:
             - pypi.org
       - docker_push:
