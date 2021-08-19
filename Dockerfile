@@ -2,8 +2,9 @@ FROM python:3-alpine
 
 LABEL maintainer="cloudops@clark.de"
 
+RUN apk update && apk upgrade
+
 COPY . /setup
-#WORKDIR /setup
 
 RUN \
   apk add --no-cache --upgrade git && \
@@ -13,4 +14,7 @@ RUN \
   rm -rf /setup /var/cache/apk 
 
 EXPOSE 8000/tcp
+
+USER 65534
+
 CMD ["aws-exporter"]

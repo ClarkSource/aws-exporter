@@ -12,15 +12,16 @@ import boto3
 import time
 import logging
 
-from aws_exporter.metrics import EC2_AMI_CREATION_DATE
-from aws_exporter.util import paginate
+from aws_exporter.metrics import (EC2_AMI_COLLECTOR_SUCCESS, EC2_AMI_CREATION_DATE)
+from aws_exporter.util import paginate, success_metric
 from aws_exporter.aws.sts import get_account_id
 
 EC2 = boto3.client('ec2')
 LOGGER = logging.getLogger(__name__)
 
 
-def get_amis():
+@success_metric(EC2_AMI_COLLECTOR_SUCCESS)
+def get_amis(ami_owners):
     def observe(response):
         for image in response.get('Images', []):
             labels = [
@@ -41,12 +42,6 @@ def get_amis():
             creation_date = time.strptime(image['CreationDate'], '%Y-%m-%dT%H:%M:%S.%fZ')
 
             EC2_AMI_CREATION_DATE.labels(*labels).set(time.mktime(creation_date))
-
-    ami_owners = ['self']
-    additional_ami_owners = os.environ.get('AWS_EXPORTER_EC2_AMI_OWNERS')
-
-    if additional_ami_owners is not None:
-        ami_owners.extend(additional_ami_owners.split(','))
 
     paginate(EC2.describe_images, observe, dict(Owners=ami_owners))
 

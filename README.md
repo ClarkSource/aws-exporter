@@ -12,10 +12,12 @@ Prometheus exporter for generic AWS metrics.
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Configuration](#configuration)
 - [Metrics](#metrics)
   - [AWS Backup](#aws-backup)
   - [AWS SNS](#aws-sns)
   - [AWS EC2 AMIs](#aws-ec2-amis)
+    - [configuration](#configuration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -37,6 +39,10 @@ $ aws-exporter
 
 The exporter should be exposed on port `8000`
 
+## Configuration
+
+`AWS_EXPORTER_LOG_LEVEL` - [debug,info,warning,error,critical,fatal]
+
 ## Metrics
 
 ### AWS Backup
@@ -55,4 +61,9 @@ The exporter should be exposed on port `8000`
 
 ### AWS EC2 AMIs
 
+* ec2_ami_collector_success
 * ec2_ami_creation_date
+
+#### configuration
+
+`AWS_EXPORTER_EC2_AMI_OWNERS` - additional AMI owners, comma separated.
