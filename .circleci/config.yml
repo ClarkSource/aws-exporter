@@ -22,8 +22,12 @@ jobs:
       - image: circleci/python:3.9
     steps:
       - checkout
-      - run: sudo pip install build twine
-      - run: python -m build
+      - run: sudo pip install build twine setuptools-scm
+      - run:
+          # https://github.com/pypa/setuptools_scm/issues/455
+          command: |
+            export SETUPTOOLS_SCM_PRETEND_VERSION=$(python -c 'from setuptools_scm import get_version; print(get_version(local_scheme="no-local-version"))')
+            python -m build
       - run: twine upload --repository testpypi dist/*
 
   pypi_publish:
@@ -34,6 +38,12 @@ jobs:
       - run: sudo pip install build twine
       - run: python -m build
       - run: twine upload dist/*
+
+only_on_main_branch: &only_on_main_branch
+  filters:
+    branches:
+      only:
+        - master
 
 only_on_tags: &only_on_tags
   filters:
@@ -49,7 +59,7 @@ workflows:
       - test
       - check_build
       - test_pypi_publish:
-          <<: *only_on_tags
+          <<: *only_on_main_branch
           requires:
             - test
       - pypi_publish:
