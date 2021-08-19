@@ -1,24 +1,4 @@
 version: 2
-
-workflows:
-  test_and_publish:
-    jobs:
-      - test
-      - test_pypi_publish:
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - master
-      - pypi_publish:
-          requires:
-            - test
-          filters:
-            tags:
-              only:
-                - /(\d)+(\.(\d)+)+/
-
 jobs:
   test:
     docker:
@@ -43,3 +23,23 @@ jobs:
       - checkout
       - run: python setup.py sdist bdist_wheel
       - run: pip install twine
+workflows:
+  version: 2
+  test_and_publish:
+    jobs:
+      - test
+      - test_pypi_publish:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - pypi_publish:
+          requires:
+            - test
+          filters:
+            tags:
+              only:
+                - /(\d)+(\.(\d)+)+/
+
