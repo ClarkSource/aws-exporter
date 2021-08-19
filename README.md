@@ -1,5 +1,6 @@
 # AWS Prometheus Exporter
 
+[![CircleCI](https://circleci.com/gh/ClarkSource/aws-exporter/tree/master.svg?style=shield)](https://circleci.com/gh/ClarkSource/aws-exporter/tree/master)
 [![PyPi version](https://pypip.in/v/aws-exporter/badge.png)](https://pypi.org/project/aws-exporter/)
 [![PyPi downloads](https://pypip.in/d/aws-exporter/badge.png)](https://pypi.org/project/aws-exporter/)
 [![CLARK Open Source](https://img.shields.io/badge/CLARK-Open%20Source-%232B6CDE.svg)](https://www.clark.de/de/jobs)
