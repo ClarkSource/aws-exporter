@@ -61,17 +61,17 @@ SNS_PLATFORM_APPLICATION_CERT_EXPIRY = Gauge(
 # AWS EC2 AMIs
 
 EC2_AMI_LABELS = COMMON_LABELS + [
-    'architecture',
-    'ena_support',
-    'hypervisor',
-    'image_id',
-    'image_name',
-    'owner_id',
-    'platform',
-    'public',
-    'root_device_name',
-    'root_device_type',
-    'virtualization_type',
+    'ec2_ami',
+    'ec2_architecture',
+    'ec2_ena_support',
+    'ec2_hypervisor',
+    'ec2_image_name',
+    'ec2_owner_id',
+    'ec2_platform',
+    'ec2_public',
+    'ec2_root_device_name',
+    'ec2_root_device_type',
+    'ec2_virtualization_type',
 ]
 
 EC2_AMI_COLLECTOR_SUCCESS = Gauge(
@@ -79,3 +79,29 @@ EC2_AMI_COLLECTOR_SUCCESS = Gauge(
 
 EC2_AMI_CREATION_DATE = Gauge(
     'ec2_ami_creation_date', 'AWS EC2 AMI creation date in unix epoch', EC2_AMI_LABELS)
+
+###############################################################################
+# AWS EC2 Instances
+
+EC2_INSTANCE_LABELS = COMMON_LABELS + [
+    'ec2_ami',
+    'ec2_instance_id',
+    'ec2_instance_type',
+    'ec2_architecture',
+    'ec2_ebs_optimized',
+    'ec2_ena_support',
+    'ec2_hypervisor',
+    'ec2_root_device_name',
+    'ec2_root_device_type',
+    'ec2_source_dest_check',
+    'ec2_virtualization_type',
+    'ec2_metadata_options_http_tokens',
+    'ec2_metadata_options_http_put_response_hop_limit',
+    'ec2_metadata_options_endpoint',
+]
+
+EC2_INSTANCE_COLLECTOR_SUCCESS = Gauge(
+    'ec2_instance_collector_success', 'AWS EC2 instance collector success', COMMON_LABELS)
+
+EC2_INSTANCE_CREATION_DATE = Gauge(
+    'ec2_instance_creation_date', 'AWS EC2 instance creation date in unix epoch', EC2_INSTANCE_LABELS)
