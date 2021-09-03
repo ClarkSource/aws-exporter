@@ -21,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def main():
+    delay = int(os.environ.get('AWS_EXPORTER_POLL_DELAY', 10))
     port = int(os.environ.get('AWS_EXPORTER_PORT', 8000))
     log_level = getattr(logging, os.environ.get('AWS_EXPORTER_LOG_LEVEL', 'info').upper())
 
@@ -42,12 +43,16 @@ def main():
         start_http_server(port)
 
         while True:
+            LOGGER.debug('querying resources')
+
             get_backup_vaults()
             get_backup_jobs()
             get_platform_applications()
             get_amis(ami_owners)
             get_instances()
 
-            time.sleep(10)
+            LOGGER.debug('sleeping %d seconds', delay)
+
+            time.sleep(delay)
     except KeyboardInterrupt:
         exit(137)

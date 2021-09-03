@@ -9,6 +9,7 @@
 
 import boto3
 import datetime
+import logging
 
 from aws_exporter.metrics import (
     SNS_PLATFORM_APPLICATION_COLLECTOR_SUCCESS,
@@ -19,6 +20,8 @@ from aws_exporter.util import paginate, success_metric
 from aws_exporter.aws.sts import get_account_id
 
 SNS = boto3.client('sns')
+LOGGER = logging.getLogger(__name__)
+
 
 @success_metric(SNS_PLATFORM_APPLICATION_COLLECTOR_SUCCESS)
 def get_platform_applications():
@@ -80,6 +83,9 @@ def get_platform_applications():
 
                 SNS_PLATFORM_APPLICATION_CERT_EXPIRY.labels(*labels).set(expiry.timestamp())
 
+    LOGGER.debug('querying SNS platform applications')
+
     paginate(SNS.list_platform_applications, observe)
 
+    LOGGER.debug('finished querying SNS platform applications')
 

@@ -26,24 +26,28 @@ def get_amis(ami_owners):
         for image in response.get("Images", []):
             labels = [
                 get_account_id(),
-                image["ImageId"],
-                image["Architecture"],
-                image["EnaSupport"],
-                image["Hypervisor"],
-                image["Name"],
-                image["OwnerId"],
-                image["PlatformDetails"],
-                image["Public"],
-                image["RootDeviceName"],
-                image["RootDeviceType"],
-                image["VirtualizationType"],
+                image.get("ImageId"),
+                image.get("Architecture"),
+                image.get("EnaSupport"),
+                image.get("Hypervisor"),
+                image.get("Name"),
+                image.get("OwnerId"),
+                image.get("PlatformDetails"),
+                image.get("Public"),
+                image.get("RootDeviceName"),
+                image.get("RootDeviceType"),
+                image.get("VirtualizationType"),
             ]
 
             creation_date = time.strptime(image["CreationDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
             EC2_AMI_CREATION_DATE.labels(*labels).set(time.mktime(creation_date))
 
+    LOGGER.debug('querying EC2 AMIs')
+
     paginate(EC2.describe_images, observe, dict(Owners=ami_owners))
+
+    LOGGER.debug('finished querying EC2 AMIs')
 
 
 @success_metric(EC2_INSTANCE_COLLECTOR_SUCCESS)
@@ -55,27 +59,31 @@ def get_instances():
 
                 labels = [
                     get_account_id(),
-                    instance['ImageId'],
-                    instance['InstanceId'],
-                    instance['InstanceType'],
-                    instance['Architecture'],
-                    instance['EbsOptimized'],
-                    instance['EnaSupport'],
-                    instance['Hypervisor'],
-                    instance['RootDeviceName'],
-                    instance['RootDeviceType'],
-                    instance['SourceDestCheck'],
-                    instance['VirtualizationType'],
-                    metadata_options['HttpTokens'],
-                    metadata_options['HttpPutResponseHopLimit'],
-                    metadata_options['HttpEndpoint'],
+                    instance.get('ImageId'),
+                    instance.get('InstanceId'),
+                    instance.get('InstanceType'),
+                    instance.get('Architecture'),
+                    instance.get('EbsOptimized'),
+                    instance.get('EnaSupport'),
+                    instance.get('Hypervisor'),
+                    instance.get('RootDeviceName'),
+                    instance.get('RootDeviceType'),
+                    instance.get('SourceDestCheck'),
+                    instance.get('VirtualizationType'),
+                    metadata_options.get('HttpTokens'),
+                    metadata_options.get('HttpPutResponseHopLimit'),
+                    metadata_options.get('HttpEndpoint'),
                 ]
 
                 launch_time = instance['LaunchTime']
 
                 EC2_INSTANCE_CREATION_DATE.labels(*labels).set(time.mktime(launch_time.timetuple()))
 
+    LOGGER.debug('querying EC2 instances')
+
     paginate(EC2.describe_instances, observe)
+
+    LOGGER.debug('finished querying EC2 instances')
 
 
 # -*- coding: utf-8 -*-
