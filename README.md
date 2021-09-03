@@ -18,6 +18,7 @@ Prometheus exporter for generic AWS metrics.
   - [AWS SNS](#aws-sns)
   - [AWS EC2 AMIs](#aws-ec2-amis)
     - [configuration](#configuration)
+  - [AWS EC2 Instances](#aws-ec2-instances)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -67,3 +68,8 @@ The exporter should be exposed on port `8000`
 #### configuration
 
 `AWS_EXPORTER_EC2_AMI_OWNERS` - additional AMI owners, comma separated.
+
+### AWS EC2 Instances
+
+* ec2_instance_collector_success
+* ec2_instance_creation_date

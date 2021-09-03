@@ -15,7 +15,7 @@ from prometheus_client import start_http_server
 
 from aws_exporter.aws.backup import get_backup_jobs, get_backup_vaults
 from aws_exporter.aws.sns import get_platform_applications
-from aws_exporter.aws.ec2 import get_amis
+from aws_exporter.aws.ec2 import get_amis, get_instances
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,6 +46,7 @@ def main():
             get_backup_jobs()
             get_platform_applications()
             get_amis(ami_owners)
+            get_instances()
 
             time.sleep(10)
     except KeyboardInterrupt:
