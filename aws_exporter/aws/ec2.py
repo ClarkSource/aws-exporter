@@ -61,6 +61,7 @@ def get_instances():
                     get_account_id(),
                     instance.get('ImageId'),
                     instance.get('InstanceId'),
+                    instance.get('State', {}).get('Name').lower(),
                     instance.get('InstanceType'),
                     instance.get('Architecture'),
                     instance.get('EbsOptimized'),

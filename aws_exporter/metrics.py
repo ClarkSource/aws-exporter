@@ -86,6 +86,7 @@ EC2_AMI_CREATION_DATE = Gauge(
 EC2_INSTANCE_LABELS = COMMON_LABELS + [
     'ec2_ami',
     'ec2_instance_id',
+    'ec2_instance_state',
     'ec2_instance_type',
     'ec2_architecture',
     'ec2_ebs_optimized',
