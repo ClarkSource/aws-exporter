@@ -11,108 +11,138 @@ import datetime
 import logging
 
 import boto3
-from aws_exporter.metrics import (BACKUP_JOB_COLLECTOR_SUCCESS,
-                                  BACKUP_JOB_PERCENT_DONE,
-                                  BACKUP_JOB_SIZE_BYTES,
-                                  BACKUP_VAULT_COLLECTOR_SUCCESS,
-                                  BACKUP_VAULT_RECOVERY_POINTS)
+from prometheus_client.core import GaugeMetricFamily
+from aws_exporter.aws import COMMON_LABELS
 from aws_exporter.aws.sts import get_account_id
-from aws_exporter.util import paginate, success_metric
+from aws_exporter.util import paginate, strget
 
 BACKUP = boto3.client("backup")
 LOGGER = logging.getLogger(__name__)
+BACKUP_JOB_LABELS = COMMON_LABELS + [
+    'creation_date',
+    'completion_date',
+    'backup_job_id',
+    'backup_job_state',
+    'backup_rule_id',
+    'backup_plan_id',
+    'backup_vault_name',
+]
+BACKUP_VAULT_LABELS = COMMON_LABELS + [
+    'backup_vault_name'
+]
 
 
-@success_metric(BACKUP_JOB_COLLECTOR_SUCCESS)
-def get_backup_jobs():
-    """
-    {
-        'BackupJobs': [
-            {
-                'BackupJobId': 'string',
-                'BackupVaultName': 'string',
-                'BackupVaultArn': 'string',
-                'RecoveryPointArn': 'string',
-                'ResourceArn': 'string',
-                'CreationDate': datetime(2015, 1, 1),
-                'CompletionDate': datetime(2015, 1, 1),
-                'State': 'CREATED'|'PENDING'|'RUNNING'|'ABORTING'|'ABORTED'|'COMPLETED'|'FAILED'|'EXPIRED',
-                'StatusMessage': 'string',
-                'PercentDone': 'string',
-                'BackupSizeInBytes': 123,
-                'IamRoleArn': 'string',
-                'CreatedBy': {
-                    'BackupPlanId': 'string',
-                    'BackupPlanArn': 'string',
-                    'BackupPlanVersion': 'string',
-                    'BackupRuleId': 'string'
+class AWSBackupMetricsCollector:
+    def __init__(self, config = None):
+        self.ami_owners = config.get('ami_owners', {}) if config is not None else ['self']
+
+    def describe(self):
+        yield GaugeMetricFamily('aws_backup_job_size_bytes', 'AWS Backup job size in bytes', labels=BACKUP_JOB_LABELS)
+        yield GaugeMetricFamily('aws_backup_job_percent_done', 'AWS Backup job percent done', labels=BACKUP_JOB_LABELS)
+        yield GaugeMetricFamily('aws_backup_vault_recovery_points', 'AWS Backup vault number of recovery points', labels=BACKUP_VAULT_LABELS)
+
+    def collect(self):
+        yield from self.get_backup_jobs()
+        yield from self.get_backup_vaults()
+
+    def get_backup_jobs(self):
+        """
+        {
+            'BackupJobs': [
+                {
+                    'BackupJobId': 'string',
+                    'BackupVaultName': 'string',
+                    'BackupVaultArn': 'string',
+                    'RecoveryPointArn': 'string',
+                    'ResourceArn': 'string',
+                    'CreationDate': datetime(2015, 1, 1),
+                    'CompletionDate': datetime(2015, 1, 1),
+                    'State': 'CREATED'|'PENDING'|'RUNNING'|'ABORTING'|'ABORTED'|'COMPLETED'|'FAILED'|'EXPIRED',
+                    'StatusMessage': 'string',
+                    'PercentDone': 'string',
+                    'BackupSizeInBytes': 123,
+                    'IamRoleArn': 'string',
+                    'CreatedBy': {
+                        'BackupPlanId': 'string',
+                        'BackupPlanArn': 'string',
+                        'BackupPlanVersion': 'string',
+                        'BackupRuleId': 'string'
+                    },
+                    'ExpectedCompletionDate': datetime(2015, 1, 1),
+                    'StartBy': datetime(2015, 1, 1),
+                    'ResourceType': 'string',
+                    'BytesTransferred': 123
                 },
-                'ExpectedCompletionDate': datetime(2015, 1, 1),
-                'StartBy': datetime(2015, 1, 1),
-                'ResourceType': 'string',
-                'BytesTransferred': 123
-            },
-        ],
-        'NextToken': 'string'
-    }
-    """
+            ],
+            'NextToken': 'string'
+        }
+        """
+        backup_job_size_bytes = GaugeMetricFamily('aws_backup_job_size_bytes', 'AWS Backup job size in bytes', labels=BACKUP_JOB_LABELS)
+        backup_job_percent_done = GaugeMetricFamily('aws_backup_job_percent_done', 'AWS Backup job percent done', labels=BACKUP_JOB_LABELS)
 
-    def observe(response):
-        for job in response.get("BackupJobs", []):
-            labels = [
-                get_account_id(),
-                job["CreationDate"],
-                job["CompletionDate"],
-                job["BackupJobId"],
-                job["State"],
-                job["CreatedBy"]["BackupRuleId"],
-                job["CreatedBy"]["BackupPlanId"],
-                job["BackupVaultName"],
-            ]
+        def observe(response):
+            for job in response.get("BackupJobs", []):
+                labels = [
+                    get_account_id(),
+                    strget(job, 'CreationDate'),
+                    strget(job, 'CompletionDate'),
+                    strget(job, 'BackupJobId'),
+                    strget(job, 'State'),
+                    strget(job['CreatedBy'], 'BackupRuleId'),
+                    strget(job['CreatedBy'], 'BackupPlanId'),
+                    strget(job, 'BackupVaultName'),
+                ]
 
-            BACKUP_JOB_PERCENT_DONE.labels(*labels).set(float(job["PercentDone"]))
+                backup_job_percent_done.add_metric(labels, float(job["PercentDone"]))
 
-            if "BackupSizeInBytes" in job:
-                BACKUP_JOB_SIZE_BYTES.labels(*labels).set(float(job["BackupSizeInBytes"]))
+                if "BackupSizeInBytes" in job:
+                    backup_job_size_bytes.add_metric(labels, float(job["BackupSizeInBytes"]))
 
-    LOGGER.debug('querying Backup jobs')
+        LOGGER.debug('querying Backup jobs')
 
-    paginate(
-        BACKUP.list_backup_jobs, observe, dict(ByCreatedAfter=datetime.datetime.now() - datetime.timedelta(1)),
-    )
+        paginate(
+            BACKUP.list_backup_jobs, observe, dict(ByCreatedAfter=datetime.datetime.now() - datetime.timedelta(1)),
+        )
 
-    LOGGER.debug('finished querying Backup jobs')
+        yield backup_job_percent_done
+        yield backup_job_size_bytes
+
+        LOGGER.debug('finished querying Backup jobs')
 
 
-@success_metric(BACKUP_VAULT_COLLECTOR_SUCCESS)
-def get_backup_vaults():
-    """
-    {
-        'BackupVaultList': [
-            {
-                'BackupVaultName': 'string',
-                'BackupVaultArn': 'string',
-                'CreationDate': datetime(2015, 1, 1),
-                'EncryptionKeyArn': 'string',
-                'CreatorRequestId': 'string',
-                'NumberOfRecoveryPoints': 123
-            },
-        ],
-        'NextToken': 'string'
-    }
-    """
+    def get_backup_vaults(self):
+        """
+        {
+            'BackupVaultList': [
+                {
+                    'BackupVaultName': 'string',
+                    'BackupVaultArn': 'string',
+                    'CreationDate': datetime(2015, 1, 1),
+                    'EncryptionKeyArn': 'string',
+                    'CreatorRequestId': 'string',
+                    'NumberOfRecoveryPoints': 123
+                },
+            ],
+            'NextToken': 'string'
+        }
+        """
+        backup_vault_recovery_points = GaugeMetricFamily('aws_backup_vault_recovery_points', 'AWS Backup vault number of recovery points', labels=BACKUP_VAULT_LABELS)
 
-    def observe(response):
-        for vault in response.get("BackupVaultList", []):
-            labels = [
-                get_account_id(),
-                vault["BackupVaultName"],
-            ]
+        def observe(response):
+            for vault in response.get("BackupVaultList", []):
+                labels = [
+                    get_account_id(),
+                    strget(vault, 'BackupVaultName')
+                ]
 
-            BACKUP_VAULT_RECOVERY_POINTS.labels(*labels).set(vault["NumberOfRecoveryPoints"])
+                backup_vault_recovery_points.add_metric(labels, vault["NumberOfRecoveryPoints"])
 
-    LOGGER.debug('querying Backup vaults')
+        LOGGER.debug('querying Backup vaults')
 
-    paginate(BACKUP.list_backup_vaults, observe)
+        paginate(BACKUP.list_backup_vaults, observe)
 
-    LOGGER.debug('finished querying Backup vaults')
+        yield backup_vault_recovery_points
+
+        LOGGER.debug('finished querying Backup vaults')
+
+# -*- coding: utf-8 -*-
