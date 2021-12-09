@@ -13,15 +13,13 @@ import logging
 
 from prometheus_client import start_http_server
 
-from aws_exporter.aws.backup import get_backup_jobs, get_backup_vaults
-from aws_exporter.aws.sns import get_platform_applications
-from aws_exporter.aws.ec2 import get_amis, get_instances
+from aws_exporter.metrics import MetricsCollector
 
 LOGGER = logging.getLogger(__name__)
 
 
 def main():
-    delay = int(os.environ.get('AWS_EXPORTER_POLL_DELAY', 10))
+    delay = int(os.environ.get('AWS_EXPORTER_POLL_DELAY', 30))
     port = int(os.environ.get('AWS_EXPORTER_PORT', 8000))
     log_level = getattr(logging, os.environ.get('AWS_EXPORTER_LOG_LEVEL', 'info').upper())
 
@@ -42,17 +40,9 @@ def main():
 
         start_http_server(port)
 
-        while True:
-            LOGGER.debug('querying resources')
-
-            get_backup_vaults()
-            get_backup_jobs()
-            get_platform_applications()
-            get_amis(ami_owners)
-            get_instances()
-
-            LOGGER.debug('sleeping %d seconds', delay)
-
-            time.sleep(delay)
+        metrics = MetricsCollector(ec2_config=dict(ami_owners=ami_owners))
+        metrics.run_loop(delay)
     except KeyboardInterrupt:
         exit(137)
+
+# -*- coding: utf-8 -*-

@@ -49,3 +49,7 @@ def success_metric(metric):
         return function_wrapper
 
     return decorator
+
+
+def strget(dict_obj, value, default=None):
+    return str(dict_obj.get(value, default))
