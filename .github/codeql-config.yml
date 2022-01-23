@@ -1,0 +1,15 @@
+# On adding custom queries https://lgtm.com/help/lgtm/about-queries#how-do-i-add-custom-queries-to-LGTM
+name: "CodeQL config"
+
+disable-default-queries: false
+
+queries:
+  - name: Enable Security-Extended query pack
+    uses: security-and-quality
+
+  - name: Enable queries which are disabled by default
+    uses: ./.github/codeql-custom.qls
+
+# TODO Taint analysis of previous secrets
+#  - name: Experimental CodeQL queries
+#    uses: ./.lgtm/python-queries/

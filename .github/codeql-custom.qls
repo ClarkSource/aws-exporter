@@ -1,0 +1,12 @@
+- import: codeql-suites/python-lgtm-full.qls
+  from: codeql/python-queries
+- include:
+    id:
+      - py/overly-permissive-file
+      - py/hardcoded-credentials
+      - py/full-ssrf
+
+    tags:
+      - "security"
+      - "correctness"
+    severity: "error"
