@@ -22,11 +22,18 @@ LOGGER = logging.getLogger(__name__)
 
 
 class MetricsCollector:
-    def __init__(self, ec2_config = None):
-        REGISTRY.register(AWSEC2MetricsCollector(config = ec2_config))
-        REGISTRY.register(AWSSNSMetricsCollector())
-        REGISTRY.register(AWSBackupMetricsCollector())
-        REGISTRY.register(AWSSESMetricsCollector())
+    def __init__(self, metrics_config):
+        if metrics_config['enable_ec2']:
+            REGISTRY.register(AWSEC2MetricsCollector(config = metrics_config['ec2']))
+
+        if metrics_config['enable_sns']:
+            REGISTRY.register(AWSSNSMetricsCollector())
+
+        if metrics_config['enable_backup']:
+            REGISTRY.register(AWSBackupMetricsCollector())
+
+        if metrics_config['enable_ses']:
+            REGISTRY.register(AWSSESMetricsCollector())
 
     def run_loop(self, polling_interval_seconds = 30):
         while True:
