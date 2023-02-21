@@ -16,6 +16,7 @@ from prometheus_client.core import REGISTRY
 from aws_exporter.aws.ec2 import AWSEC2MetricsCollector
 from aws_exporter.aws.backup import AWSBackupMetricsCollector
 from aws_exporter.aws.sns import AWSSNSMetricsCollector
+from aws_exporter.aws.ses import AWSSESMetricsCollector
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class MetricsCollector:
         REGISTRY.register(AWSEC2MetricsCollector(config = ec2_config))
         REGISTRY.register(AWSSNSMetricsCollector())
         REGISTRY.register(AWSBackupMetricsCollector())
+        REGISTRY.register(AWSSESMetricsCollector())
 
     def run_loop(self, polling_interval_seconds = 30):
         while True:
