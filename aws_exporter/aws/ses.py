@@ -22,9 +22,9 @@ LOGGER = logging.getLogger(__name__)
 SES_LABELS = COMMON_LABELS
 
 
-class AWSESMetricsCollector:
+class AWSSESMetricsCollector:
     def _metrics_containers(self):
-        {
+        return {
             'aws_ses_send_quota_max': GaugeMetricFamily(
                 'aws_ses_send_quota_max',
                 'The maximum number of emails the user is allowed to send in a 24-hour interval.',
@@ -40,69 +40,28 @@ class AWSESMetricsCollector:
                 'The number of emails sent during the previous 24 hours.',
                 labels=SES_LABELS
             ),
-            'aws_ses_bounces': GaugeMetricFamily(
-                'aws_ses_bounces',
-                'Number of emails that have bounced.',
-                labels=SES_LABELS
-            ),
-            'aws_ses_complaints': GaugeMetricFamily(
-                'aws_ses_complaints',
-                'Number of unwanted emails that were rejected by recipients.',
-                labels=SES_LABELS
-            ),
-            'aws_ses_rejects': GaugeMetricFamily(
-                'aws_ses_rejects',
-                'Number of emails rejected by Amazon SES.',
-                labels=SES_LABELS
-            ),
-            'aws_ses_delivery_attempts': GaugeMetricFamily(
-                'aws_ses_delivery_attempts',
-                'Number of emails that have been sent.',
-                labels=SES_LABELS
-            ),
         }
 
     def describe(self):
-        self._metrics_containers().values()
+        return self._metrics_containers().values()
 
     def collect(self):
         metrics = self._metrics_containers()
         labels  = [get_account_id()]
-
-        yield from self._fetch_send_quota(self, metrics, labels)
-        yield from self._fetch_statistic(self, metrics, labels)
-
-    def _fetch_send_quota(self, metrics, labels):
-        LOGGER.debug('querying sending quotas')
-
         mapping = {
             'aws_ses_send_quota_max': 'Max24HourSend',
             'aws_ses_send_quota_rate_max': 'MaxSendRate',
             'aws_ses_send_quota_used': 'SentLast24Hours',
         }
+
+        LOGGER.debug('querying sending quotas')
+
         response = SES.get_send_quota()
 
         for metric_key, response_key in mapping.items():
-            metrics[metric_key].add_metric(labels, response[response_key])
+            metrics[metric_key].add_metric(labels, strget(response, response_key))
             yield metrics[metric_key]
 
         LOGGER.debug('finished querying sending quotas')
-
-    def _fetch_statistic(self, metrics, labels):
-        LOGGER.debug('querying sending statistics')
-
-        mapping = {
-            'aws_ses_bounces': 'Bounces',
-            'aws_ses_complaints': 'Complaints',
-            'aws_ses_rejects': 'Rejects',
-            'aws_ses_delivery_attempts': 'DeliveryAttempts',
-        }
-        response = SES.get_send_statistics()
-
-        for metric_key, response_key in mapping.items():
-            metrics[metric_key].add_metric(labels, response[response_key])
-            yield metrics[metric_key]
-
-        LOGGER.debug('finished querying sending statistics')
 
 # -*- coding: utf-8 -*-
