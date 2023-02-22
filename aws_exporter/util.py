@@ -53,3 +53,6 @@ def success_metric(metric):
 
 def strget(dict_obj, value, default=None):
     return str(dict_obj.get(value, default))
+
+def strtobool(string):
+    return string.lower() in ('true', '1', 't')

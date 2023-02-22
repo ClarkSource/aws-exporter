@@ -12,7 +12,7 @@ import time
 import logging
 
 from prometheus_client import start_http_server
-
+from aws_exporter.util import strtobool
 from aws_exporter.metrics import MetricsCollector
 
 LOGGER = logging.getLogger(__name__)
@@ -22,25 +22,32 @@ def main():
     delay = int(os.environ.get('AWS_EXPORTER_POLL_DELAY', 30))
     port = int(os.environ.get('AWS_EXPORTER_PORT', 8000))
     log_level = getattr(logging, os.environ.get('AWS_EXPORTER_LOG_LEVEL', 'info').upper())
+    metrics_config = {
+        'enable_ec2':    strtobool(os.environ.get('ENABLE_EC2_METRICS', 'True')),
+        'enable_sns':    strtobool(os.environ.get('ENABLE_SNS_METRICS', 'True')),
+        'enable_ses':    strtobool(os.environ.get('ENABLE_SES_METRICS', 'True')),
+        'enable_backup': strtobool(os.environ.get('ENABLE_BACKUP_METRICS','True')),
+        'ec2':           dict(ami_owners=['self']),
+    }
+
 
     logging.basicConfig(level=log_level)
     logging.getLogger('botocore').setLevel(logging.WARN)
     logging.getLogger('urllib3').setLevel(logging.WARN)
 
-    ami_owners = ['self']
     additional_ami_owners = os.environ.get('AWS_EXPORTER_EC2_AMI_OWNERS')
 
     if additional_ami_owners is not None:
-        ami_owners.extend(additional_ami_owners.split(','))
+        metrics_config['ec2']['ami_owners'].extend(additional_ami_owners.split(','))
 
-    LOGGER.debug('getting amis from owners: %s', ami_owners)
+    LOGGER.debug('getting amis from owners: %s', metrics_config['ec2']['ami_owners'])
 
     try:
         LOGGER.info('listening on port %d', port)
 
         start_http_server(port)
 
-        metrics = MetricsCollector(ec2_config=dict(ami_owners=ami_owners))
+        metrics = MetricsCollector(metrics_config=metrics_config)
         metrics.run_loop(delay)
     except KeyboardInterrupt:
         exit(137)
