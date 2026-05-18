@@ -5,7 +5,7 @@ jobs:
       - image: circleci/python:3.9
     steps:
       - checkout
-      - run: pip install tox
+      - run: pip install tox "virtualenv<20.22"
       - run: tox
 
   build_dist:
@@ -44,41 +44,47 @@ jobs:
       - run: twine upload /tmp/workspace/dist/*
 
   docker_build:
-    docker:
-      - image: circleci/buildpack-deps:stretch
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run: docker build -t "$IMAGE_NAME:latest" .
-      - run: 
+      - run:
+          name: set up QEMU
+          command: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - run:
+          name: set up buildx
           command: |
-            mkdir docker
-            docker save -o docker/image.tar "$IMAGE_NAME:latest"
-      - persist_to_workspace:
-          root: .
-          paths:
-            - docker/image.tar
+            docker buildx create --name multiarch --use
+            docker buildx inspect --bootstrap
+      - run:
+          name: build multi-platform image
+          command: docker buildx build --platform linux/amd64,linux/arm64 .
 
   docker_push:
-    docker:
-      - image: circleci/buildpack-deps:stretch
+    machine:
+      image: ubuntu-2204:current
     steps:
       - run: test -n "$CIRCLE_TAG"
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run: docker load -i /tmp/workspace/docker/image.tar
+      - checkout
+      - run:
+          name: set up QEMU
+          command: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - run:
+          name: set up buildx
+          command: |
+            docker buildx create --name multiarch --use
+            docker buildx inspect --bootstrap
       - run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
       - run:
-          name: push versioned image
+          name: build and push multi-platform image
           command: |
-            docker tag "$IMAGE_NAME:latest" "$IMAGE_NAME:$CIRCLE_TAG"
-            docker push "$IMAGE_NAME:$CIRCLE_TAG"
-      - run:
-          name: push latest image
-          command: docker push "$IMAGE_NAME:latest"
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --tag "$IMAGE_NAME:$CIRCLE_TAG" \
+              --tag "$IMAGE_NAME:latest" \
+              --push \
+              .
 
 build_everywhere: &build_everywhere
   filters:
