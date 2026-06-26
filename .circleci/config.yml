@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   test:
     docker:
@@ -105,7 +105,6 @@ build_only_on_tags: &build_only_on_tags
       only: /.*/
 
 workflows:
-  version: 2
   test_and_publish:
     jobs:
       - test:
