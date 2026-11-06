@@ -1,8 +1,8 @@
 # AWS Prometheus Exporter
 
 [![ci](https://github.com/ClarkSource/aws-exporter/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ClarkSource/aws-exporter/actions/workflows/ci.yml)
-[![PyPi version](https://pypip.in/v/aws-exporter/badge.png)](https://pypi.org/project/aws-exporter/)
-[![PyPi downloads](https://pypip.in/d/aws-exporter/badge.png)](https://pypi.org/project/aws-exporter/)
+[![PyPi version](https://img.shields.io/pypi/v/aws-exporter)](https://pypi.org/project/aws-exporter/)
+[![PyPi downloads](https://img.shields.io/pypi/dm/aws-exporter)](https://pypi.org/project/aws-exporter/)
 [![CLARK Open Source](https://img.shields.io/badge/CLARK-Open%20Source-%232B6CDE.svg)](https://www.clark.de/de/jobs)
 
 Prometheus exporter for generic AWS metrics.
